@@ -5,4 +5,6 @@ Roman</a></h1>
 ### Here you can see
 
 - 🌱 objectpool
+- 🕔 Zenject
+- 🤖 MVVM
 - 📝 coming soon...
