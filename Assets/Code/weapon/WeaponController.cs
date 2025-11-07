@@ -1,11 +1,7 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class WeaponController : MonoBehaviour
 {
-    [Header("UI")]
-    [SerializeField] private Text ammoText;
-
     private IWeapon currentWeapon;
     private IInputProvider inputProvider;
 
@@ -18,7 +14,6 @@ public class WeaponController : MonoBehaviour
     {
         currentWeapon = GetComponentInChildren<IWeapon>();
         inputProvider = GetComponent<IInputProvider>();
-        if (ammoText != null) ammoText.text = currentWeapon.GetAmmo().ToString();
 
         playerCamera = Camera.main;
     }
@@ -28,7 +23,6 @@ public class WeaponController : MonoBehaviour
         HandleFire();
         HandleReload();
         HandleADS();
-        UpdateUI();
     }
 
     private void HandleFire()
@@ -41,7 +35,7 @@ public class WeaponController : MonoBehaviour
 
     private void HandleReload()
     {
-        if (inputProvider.IsReloadPressed() && currentWeapon.GetAmmo() < 30)
+        if (inputProvider.IsReloadPressed())
         {
             currentWeapon.Reload();
         }
@@ -62,11 +56,5 @@ public class WeaponController : MonoBehaviour
                 transform.GetChild(i).GetChild(i).localPosition = Vector3.Lerp(transform.GetChild(i).GetChild(i).localPosition, targetWeaponPos, Time.deltaTime * 5f);
             }
         }
-    }
-
-    private void UpdateUI()
-    {
-        string result = currentWeapon.GetAmmo().ToString() + "/" + currentWeapon.GetMaxAmmoInfo().ToString();
-        if (ammoText != null && ammoText.text != result) ammoText.text = result;
     }
 }
