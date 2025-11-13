@@ -9,4 +9,6 @@ public interface IInputProvider
     bool IsRunPressed();
     bool IsFirePressed();
     bool IsReloadPressed();
+    bool FirstGunPressed();
+    bool SecondGunPressed();
 }

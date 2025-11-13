@@ -1,16 +1,34 @@
 using System;
 using UnityEngine;
+using Zenject;
 
-public class AmmoViewModel
+public class AmmoViewModel : IDisposable
 {
     public event Action<int, int> OnAmmoChanged;
-    private readonly AmmoModel model;
-
-    public AmmoViewModel(AmmoModel model)
+    public AmmoModel model;
+    private Weapon _weapon;
+    
+    [Inject]
+    public AmmoViewModel(AmmoModel model, Weapon weapon)
     {
-        Debug.Log("AmmoViewModel successfuly injected");
         this.model = model;
+        _weapon = weapon;
+        
+        model.SetAmmo(_weapon.MaxAmmo, _weapon.MaxAmmo);
+        
+        _weapon.OnShot += OnWeaponShot;
+        _weapon.OnReload += OnWeaponReload;
+        
         NotifyView();
+    }
+    private void OnWeaponShot()
+    {
+        Shoot();
+    }
+    
+    private void OnWeaponReload(int amount)
+    {
+        Reload(amount);
     }
 
     public void Shoot()
@@ -25,11 +43,16 @@ public class AmmoViewModel
         NotifyView();
     }
 
-    public bool CanReload() => model.CurrentAmmo != model.MaxAmmo;
-    public bool CanShoot() => model.CanShoot();
-
     private void NotifyView()
     {
         OnAmmoChanged?.Invoke(model.CurrentAmmo, model.MaxAmmo);
+    }
+    public void Dispose()
+    {
+        if (_weapon != null)
+        {
+            _weapon.OnShot -= OnWeaponShot;
+            _weapon.OnReload -= OnWeaponReload;
+        }
     }
 }

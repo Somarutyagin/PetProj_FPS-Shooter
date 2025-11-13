@@ -17,4 +17,6 @@ public class InputHandler : MonoBehaviour, IInputProvider
     public bool IsRunPressed() => Input.GetKey(KeyCode.LeftShift);
     public bool IsFirePressed() => Input.GetMouseButton(0);
     public bool IsReloadPressed() => Input.GetKeyDown(KeyCode.R);
+    public bool FirstGunPressed() => Input.GetKeyDown(KeyCode.Alpha1);
+    public bool SecondGunPressed() => Input.GetKeyDown(KeyCode.Alpha2);
 }
