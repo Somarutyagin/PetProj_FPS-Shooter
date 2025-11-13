@@ -4,6 +4,8 @@ Roman</a></h1>
 
 ### Here you can see
 
+- 👾 Scriptable Objects (configs)
+- 🏭 factory
 - 🌱 objectpool
 - 🕔 Zenject
 - 🤖 MVVM
