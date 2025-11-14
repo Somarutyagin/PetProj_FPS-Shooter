@@ -230,6 +230,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hpBar: {fileID: 1993823857769504650}
   hpBarDelta: {fileID: 374045458001393804}
+  hpBarText: {fileID: 0}
+  normalEnemyMat: {fileID: 2100000, guid: 6f25448a767b01f4985a9641844ea899, type: 2}
+  takingDamageEnemyMat: {fileID: 2100000, guid: 7ce7d4180c009c243ab83ca20fb1fc4a, type: 2}
 --- !u!114 &2927017486286383743
 MonoBehaviour:
   m_ObjectHideFlags: 0

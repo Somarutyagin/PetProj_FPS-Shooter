@@ -15,6 +15,6 @@ MonoBehaviour:
   WeaponName: Pistol
   MaxAmmo: 12
   ReloadTime: 1.2
-  FireRate: 0.5
+  FireRate: 0.3
   Damage: 34
   Prefab: {fileID: 975658529869540792, guid: 19d81ceddafb73f4f85b67984b818b68, type: 3}

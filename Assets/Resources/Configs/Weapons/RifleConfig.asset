@@ -16,5 +16,5 @@ MonoBehaviour:
   MaxAmmo: 30
   ReloadTime: 2
   FireRate: 0.15
-  Damage: 14
+  Damage: 15
   Prefab: {fileID: 5603221243184108740, guid: 977d7d577d609a542a6c08349c875cdb, type: 3}

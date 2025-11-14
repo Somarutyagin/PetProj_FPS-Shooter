@@ -4,6 +4,8 @@ using Zenject;
 
 public class WeaponController : MonoBehaviour
 {
+    [Inject(Id = "BulletTracer")] private GameObject bulletTracerPrefab;
+    [Inject(Id = "BulletHole")] private GameObject bulletHolePrefab;
     [Inject] private WeaponConfigsContainer _configsContainer;
     [Inject] private WeaponFactory _weaponFactory;
     [Inject] private AmmoViewModelFactory _viewModelFactory;
@@ -38,7 +40,7 @@ public class WeaponController : MonoBehaviour
 
         foreach (var config in configs)
         {
-            var weapon = _weaponFactory.Create(config, playerCamera.gameObject.transform);
+            var weapon = _weaponFactory.Create(config, bulletTracerPrefab, bulletHolePrefab, playerCamera.gameObject.transform);
             _weapons.Add(weapon);
             _normalWeaponPos.Add(weapon.transform.localPosition);
 
@@ -84,6 +86,8 @@ public class WeaponController : MonoBehaviour
             else
             {
                 _weapons[i].gameObject.SetActive(false);
+
+                _weapons[i].ResetRecoil();
             }
         }
 
@@ -98,7 +102,6 @@ public class WeaponController : MonoBehaviour
         HandleADS();
         HandleSwitchWeapon();
     }
-
     private void HandleFire()
     {
         if (inputProvider.IsFirePressed() && _weapons[_activeWeaponIndex].CanFire())
@@ -117,7 +120,7 @@ public class WeaponController : MonoBehaviour
 
     private void HandleADS()
     {
-        bool isAiming = Input.GetMouseButton(1);
+        bool isAiming = inputProvider.IsADSPressed();
 
         float targetFOV = isAiming ? aimingFov : normalFov;
         playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFOV, Time.deltaTime * 5f);

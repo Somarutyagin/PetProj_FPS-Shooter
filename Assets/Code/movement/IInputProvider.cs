@@ -8,6 +8,7 @@ public interface IInputProvider
     bool IsCrouchPressed();
     bool IsRunPressed();
     bool IsFirePressed();
+    bool IsADSPressed();
     bool IsReloadPressed();
     bool FirstGunPressed();
     bool SecondGunPressed();
