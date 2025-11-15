@@ -948,6 +948,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 055be9e40a52e2a46b02d5f4d41367c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyPrefab: {fileID: 4785261054122985360, guid: eb648dda9b6848f429600d0bddf36774, type: 3}
 --- !u!1 &1103217876
 GameObject:
   m_ObjectHideFlags: 0
@@ -962,7 +963,9 @@ GameObject:
   - component: {fileID: 1103217884}
   - component: {fileID: 1103217883}
   - component: {fileID: 1103217886}
+  - component: {fileID: 1103217888}
   - component: {fileID: 1103217887}
+  - component: {fileID: 1103217889}
   - component: {fileID: 1103217879}
   - component: {fileID: 1103217878}
   - component: {fileID: 1103217877}
@@ -1168,6 +1171,38 @@ MonoBehaviour:
   hpBar: {fileID: 81252869}
   hpBarDelta: {fileID: 893864315}
   hpBarText: {fileID: 1959854904}
+  normalEnemyMat: {fileID: 0}
+  takingDamageEnemyMat: {fileID: 0}
+--- !u!114 &1103217888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103217876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e5bb83d646bad3438133d6cbacd2b81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1103217889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103217876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e1f9f796941f34181d5f02ec1cb161, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyAI: {fileID: 0}
+  hpBar: {fileID: 81252869}
+  hpBarDelta: {fileID: 893864315}
+  hpBarText: {fileID: 1959854904}
+  normalEnemyMat: {fileID: 0}
+  takingDamageEnemyMat: {fileID: 0}
 --- !u!1 &1128518780
 GameObject:
   m_ObjectHideFlags: 0

@@ -136,8 +136,8 @@ public class Weapon : MonoBehaviour
         {
             CreateImpactEffect(hit);
 
-            Health health = hit.collider.gameObject.GetComponent<Health>();
-            if (health != null) health.TakeDamage(Damage);
+            EnemyAI enemyAI = hit.collider.gameObject.GetComponent<EnemyAI>();
+            if (enemyAI != null) enemyAI.TakeDamage(Damage);
         }
 
         if (muzzleFlash != null)
@@ -214,6 +214,23 @@ public class Weapon : MonoBehaviour
         shotCounter = 0;
     }
 
+    public void GetItAnim()
+    {
+        if (anim != null)
+        {
+            anim.StopPlayback();
+            anim.Play("getIt");
+        }
+    }
+    public void PutAwayAnim()
+    {
+        if (anim != null)
+        {
+            anim.StopPlayback();
+            anim.Play("putAway");
+        }
+    }
+
     public void Reload()
     {
         isReloading = true;
@@ -223,6 +240,7 @@ public class Weapon : MonoBehaviour
         {
             float speedMultiplier = reloadClip.length / ReloadTime;
             anim.speed = speedMultiplier;
+            anim.StopPlayback();
             anim.Play("reload");
         }
 

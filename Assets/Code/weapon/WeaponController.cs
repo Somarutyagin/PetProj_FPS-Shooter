@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
@@ -10,7 +11,6 @@ public class WeaponController : MonoBehaviour
     [Inject] private WeaponFactory _weaponFactory;
     [Inject] private AmmoViewModelFactory _viewModelFactory;
     
-    private List<Weapon> _weapons = new List<Weapon>();
     private List<AmmoViewModel> _ammoViewModels = new List<AmmoViewModel>();
     private List<Vector3> _normalWeaponPos = new List<Vector3>();
     private int _activeWeaponIndex = 0;
@@ -24,6 +24,9 @@ public class WeaponController : MonoBehaviour
 
     private const float aimingFov = 40f;
     private const float normalFov = 60f;
+
+    private bool isSwitchingAnim = false;
+
     void Start()
     {
         playerCamera = Camera.main;
@@ -41,7 +44,6 @@ public class WeaponController : MonoBehaviour
         foreach (var config in configs)
         {
             var weapon = _weaponFactory.Create(config, bulletTracerPrefab, bulletHolePrefab, playerCamera.gameObject.transform);
-            _weapons.Add(weapon);
             _normalWeaponPos.Add(weapon.transform.localPosition);
 
             if (createdCounter == 0)
@@ -69,52 +71,50 @@ public class WeaponController : MonoBehaviour
         }
     }
 
-    public void SwitchToWeapon(int index)
+    private async UniTask SwitchToWeaponAnim(int index)
     {
-        if (index < 0 || index >= _weapons.Count)
-        {
-            Debug.LogWarning($"Invalid weapon index: {index}");
-            return;
-        }
+        isSwitchingAnim = true;
 
-        for (int i = 0; i < _weapons.Count; i++)
-        {
-            if (i == index)
-            {
-                _weapons[i].gameObject.SetActive(true);
-            }
-            else
-            {
-                _weapons[i].gameObject.SetActive(false);
+        ActiveAmmoViewModel.Weapon.PutAwayAnim();
+        await UniTask.Delay((int)(0.2f * 1000), DelayType.DeltaTime);
 
-                _weapons[i].ResetRecoil();
-            }
-        }
+        ActiveAmmoViewModel.Weapon.gameObject.SetActive(false);
+        ActiveAmmoViewModel.Weapon.ResetRecoil();
 
         _activeWeaponIndex = index;
         OnActiveWeaponChanged?.Invoke(ActiveAmmoViewModel);
+
+        ActiveAmmoViewModel.Weapon.gameObject.SetActive(true);
+
+        ActiveAmmoViewModel.Weapon.GetItAnim();
+        await UniTask.Delay((int)(0.2f * 1000), DelayType.DeltaTime);
+
+        isSwitchingAnim = false;
     }
 
     private void Update()
     {
-        HandleFire();
-        HandleReload();
-        HandleADS();
-        HandleSwitchWeapon();
+        if (!isSwitchingAnim)
+        {
+            HandleFire();
+            HandleReload();
+            HandleADS();
+            HandleSwitchWeapon();
+        }
     }
     private void HandleFire()
     {
-        if (inputProvider.IsFirePressed() && _weapons[_activeWeaponIndex].CanFire())
+        if (inputProvider.IsFirePressed() && ActiveAmmoViewModel.Weapon.CanFire())
         {
-            if (_weapons.Count > 0) _weapons[_activeWeaponIndex].Fire();
+            ActiveAmmoViewModel.Weapon.Fire();
         }
     }
 
     private void HandleReload()
     {
-        if (inputProvider.IsReloadPressed() && _weapons[_activeWeaponIndex].CanReload())
+        if (inputProvider.IsReloadPressed() && ActiveAmmoViewModel.Weapon.CanReload())
         {
-            _weapons[_activeWeaponIndex].Reload();
+            ActiveAmmoViewModel.Weapon.Reload();
         }
     }
 
@@ -133,11 +133,11 @@ public class WeaponController : MonoBehaviour
     {
         if (inputProvider.FirstGunPressed() && _activeWeaponIndex != 0)
         {
-            SwitchToWeapon(0);
+            SwitchToWeaponAnim(0).Forget();
         }
         else if (inputProvider.SecondGunPressed() && _activeWeaponIndex != 1)
         {
-            SwitchToWeapon(1);
+            SwitchToWeaponAnim(1).Forget();
         }    
     }
 }

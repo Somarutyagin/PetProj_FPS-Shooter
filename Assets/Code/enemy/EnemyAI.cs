@@ -1,10 +1,13 @@
-using UnityEngine;
 using System;
+using UnityEngine;
+using Zenject;
 
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(Health))]
+[RequireComponent(typeof(HealthView))]
 public class EnemyAI : MonoBehaviour
 {
+    public IHealthViewModel HealthViewModel { get; set; }
+
     [SerializeField] private Transform player;
 
     private const float moveSpeed = 1f;
@@ -12,19 +15,19 @@ public class EnemyAI : MonoBehaviour
 
     private EnemySpawner spawner;
     private Rigidbody rb;
-    private Health health;
     private bool isDead = false;
     private bool isPooled = false;
 
-    public event Action OnEnemyDeath;
+    public event Action<EnemyAI> OnEnemyDeath;
+
+    private const float attackTime = 0.5f;
+    private float attackTimer = 0f;
 
     [Obsolete]
     private void Awake()
     {
         spawner = FindFirstObjectByType<EnemySpawner>();
         rb = GetComponent<Rigidbody>();
-        health = GetComponent<Health>();
-        health.OnDeath += OnEnemyDeathHandler;
 
         if (player == null)
         {
@@ -36,7 +39,6 @@ public class EnemyAI : MonoBehaviour
     [Obsolete]
     private void OnDestroy()
     {
-        if (health != null) health.OnDeath -= OnEnemyDeathHandler;
         if (spawner != null) OnEnemyDeath -= spawner.OnEnemyKilled;
     }
 
@@ -58,18 +60,23 @@ public class EnemyAI : MonoBehaviour
     }
     private void Update()
     {
-        if (!isDead && player != null && Vector3.Distance(transform.position, player.position) < 1.5f)
+        attackTimer += Time.deltaTime;
+    }
+    private void OnCollisionStay(Collision collision)
+    {
+        if (attackTimer >= attackTime && !isDead && collision.transform.TryGetComponent(out PlayerHealthHandler playerHealth))
         {
-            Health playerHealth = player.GetComponent<Health>();
-            if (playerHealth != null) playerHealth.TakeDamage(10f * Time.deltaTime);
+            playerHealth.TakeDamage(10f);
+
+            attackTimer = 0f;
         }
     }
 
-    private void OnEnemyDeathHandler()
+    public void OnEnemyDeathHandler()
     {
         isDead = true;
         rb.linearVelocity = Vector3.zero;
-        OnEnemyDeath?.Invoke();
+        OnEnemyDeath?.Invoke(this);
 
         Invoke(nameof(ReturnToPool), 0.5f);
     }
@@ -78,7 +85,6 @@ public class EnemyAI : MonoBehaviour
         isDead = false;
         isPooled = true;
         transform.position = Vector3.zero;
-        health.SetHealth(health.MaxHealth);
         rb.linearVelocity = Vector3.zero;
         gameObject.SetActive(false);
     }
@@ -86,5 +92,10 @@ public class EnemyAI : MonoBehaviour
     {
         spawner.EnemyPool.Return(this);
         gameObject.SetActive(false);
+    }
+
+    public void TakeDamage(float damage)
+    {
+        HealthViewModel?.TakeDamageCommand.Execute(damage);
     }
 }

@@ -1,31 +1,30 @@
 using System;
-using UnityEngine;
 using Zenject;
+using UniRx;
 
 public class AmmoViewModel : IDisposable
 {
-    public event Action<int, int> OnAmmoChanged;
-    public AmmoModel model;
-    private Weapon _weapon;
-    
+    public AmmoModel Model { get; }
+    public Weapon Weapon { get; }
+    private readonly CompositeDisposable _disposables = new CompositeDisposable();
+
     [Inject]
     public AmmoViewModel(AmmoModel model, Weapon weapon)
     {
-        this.model = model;
-        _weapon = weapon;
-        
-        model.SetAmmo(_weapon.MaxAmmo, _weapon.MaxAmmo);
-        
-        _weapon.OnShot += OnWeaponShot;
-        _weapon.OnReload += OnWeaponReload;
-        
-        NotifyView();
+        Model = model;
+        Weapon = weapon;
+
+        Model.SetAmmo(Weapon.MaxAmmo, Weapon.MaxAmmo);
+
+        Weapon.OnShot += OnWeaponShot;
+        Weapon.OnReload += OnWeaponReload;
     }
+
     private void OnWeaponShot()
     {
         Shoot();
     }
-    
+
     private void OnWeaponReload(int amount)
     {
         Reload(amount);
@@ -33,26 +32,21 @@ public class AmmoViewModel : IDisposable
 
     public void Shoot()
     {
-        model.Shoot();
-        NotifyView();
+        Model.Shoot();
     }
 
     public void Reload(int amount)
     {
-        model.Reload(amount);
-        NotifyView();
+        Model.Reload(amount);
     }
 
-    private void NotifyView()
-    {
-        OnAmmoChanged?.Invoke(model.CurrentAmmo, model.MaxAmmo);
-    }
     public void Dispose()
     {
-        if (_weapon != null)
+        if (Weapon != null)
         {
-            _weapon.OnShot -= OnWeaponShot;
-            _weapon.OnReload -= OnWeaponReload;
+            Weapon.OnShot -= OnWeaponShot;
+            Weapon.OnReload -= OnWeaponReload;
         }
+        _disposables.Dispose();
     }
 }

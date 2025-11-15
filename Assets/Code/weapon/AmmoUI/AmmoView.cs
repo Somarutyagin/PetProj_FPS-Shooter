@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using UniRx;
+using Cysharp.Threading.Tasks;
 
 public class AmmoView : MonoBehaviour
 {
@@ -8,23 +10,20 @@ public class AmmoView : MonoBehaviour
     [SerializeField] private Text ammoText;
     [SerializeField] private Image ammoBar;
     [SerializeField] private Image ammoDelta;
-    
+
     private AmmoViewModel _currentViewModel;
+    private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
     private const int _iterationCount = 30;
     private const float _animTime = 0.2f;
     private float previousAmmo;
-    private float _timerA = 0f;
-    private int _currentIterationA = 0;
-    private bool _isAnimatingA = false;
-    private float _targetFillA;
-
 
     private void Start()
     {
         InitializeAmmoBar();
         _weaponController.OnActiveWeaponChanged += OnWeaponChanged;
     }
+
     private void InitializeAmmoBar()
     {
         if (ammoBar != null)
@@ -39,93 +38,76 @@ public class AmmoView : MonoBehaviour
 
     private void OnDisable()
     {
-        if (_currentViewModel != null)
-            _currentViewModel.OnAmmoChanged -= UpdateUI;
+        _disposables.Clear();
         _weaponController.OnActiveWeaponChanged -= OnWeaponChanged;
     }
-    
+
     private void OnWeaponChanged(AmmoViewModel viewModel)
     {
-        if (_currentViewModel != null)
-            _currentViewModel.OnAmmoChanged -= UpdateUI;
-        
-        _currentViewModel = viewModel;
-        _currentViewModel.OnAmmoChanged += UpdateUI;
-        InstantValueAmmoBar();
+        _disposables.Clear();
 
-        previousAmmo = _currentViewModel.model.CurrentAmmo;
+        _currentViewModel = viewModel;
+
+        _currentViewModel.Model.CurrentAmmo
+            .CombineLatest(_currentViewModel.Model.MaxAmmo, (current, max) => (current, max))
+            .Subscribe(UpdateUI)
+            .AddTo(_disposables);
+
+        InstantValueAmmoBar();
+        previousAmmo = _currentViewModel.Model.CurrentAmmo.Value;
     }
+
     private void InstantValueAmmoBar()
     {
-        ammoText.text = $"{_currentViewModel.model.CurrentAmmo}/{_currentViewModel.model.MaxAmmo}";
+        ammoText.text = $"{_currentViewModel.Model.CurrentAmmo.Value}/{_currentViewModel.Model.MaxAmmo.Value}";
 
         if (ammoBar != null)
         {
-            ammoBar.fillAmount = (float)_currentViewModel.model.CurrentAmmo / _currentViewModel.model.MaxAmmo;
+            ammoBar.fillAmount = (float)_currentViewModel.Model.CurrentAmmo.Value / _currentViewModel.Model.MaxAmmo.Value;
         }
         if (ammoDelta != null)
         {
-            ammoDelta.fillAmount = (float)_currentViewModel.model.CurrentAmmo / _currentViewModel.model.MaxAmmo;
+            ammoDelta.fillAmount = (float)_currentViewModel.Model.CurrentAmmo.Value / _currentViewModel.Model.MaxAmmo.Value;
         }
     }
 
-    private void UpdateUI(int current, int max)
+    private void UpdateUI((int current, int max) ammo)
     {
-        ammoText.text = $"{current}/{max}";
+        ammoText.text = $"{ammo.current}/{ammo.max}";
 
-        if (previousAmmo < current)
+        float currentFill = (float)ammo.current / ammo.max;
+        float previousFill = (float)previousAmmo / ammo.max;
+
+        if (previousAmmo < ammo.current)
         {
-            ammoDelta.fillAmount = (float)current / max;
-            StartAmmoBarDelta(true);
+            ammoDelta.fillAmount = currentFill;
+            AnimateAmmoBarDeltaAsync(true, currentFill - previousFill).Forget();
         }
         else
         {
-            ammoBar.fillAmount = (float)current / max;
-            StartAmmoBarDelta(false);
+            ammoBar.fillAmount = currentFill;
+            AnimateAmmoBarDeltaAsync(false, previousFill - currentFill).Forget();
         }
-    }
-    private void StartAmmoBarDelta(bool less)
-    {
-        _isAnimatingA = true;
-        _currentIterationA = 0;
-        _timerA = 0f;
 
-        if (less)
-        {
-            _targetFillA = ammoDelta.fillAmount - ammoBar.fillAmount;
-        }
-        else
-        {
-            _targetFillA = ammoBar.fillAmount - ammoDelta.fillAmount;
-        }
+        previousAmmo = ammo.current;
     }
-    private void FixedUpdate()
+
+    private async UniTask AnimateAmmoBarDeltaAsync(bool less, float delta)
     {
-        if (_isAnimatingA)
+        float step = delta / _iterationCount;
+        float delay = _animTime / _iterationCount;
+
+        for (int i = 0; i < _iterationCount; i++)
         {
-            _timerA += Time.fixedDeltaTime;
-            if (_currentIterationA < _iterationCount)
+            if (less)
             {
-                if (_timerA >= (_animTime / _iterationCount))
-                {
-                    _timerA -= (_animTime / _iterationCount);
-                    _currentIterationA++;
-
-                    if (previousAmmo < _currentViewModel.model.CurrentAmmo)
-                    {
-                        ammoBar.fillAmount += _targetFillA / _iterationCount;
-                    }
-                    else
-                    {
-                        ammoDelta.fillAmount += _targetFillA / _iterationCount;
-                    }
-                }
+                ammoBar.fillAmount += step;
             }
             else
             {
-                _isAnimatingA = false;
-                previousAmmo = _currentViewModel.model.CurrentAmmo;
+                ammoDelta.fillAmount -= step;
             }
+            await UniTask.Delay((int)(delay * 1000), DelayType.DeltaTime);
         }
     }
 }
