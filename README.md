@@ -7,6 +7,8 @@ Roman</a></h1>
 - 👾 Scriptable Objects (configs)
 - 🏭 factory
 - 🌱 objectpool
-- 🕔 Zenject
+- 🕔 uniTask
 - 🤖 MVVM
+- ⚡️ uniRX
+- 🟢 Zenject
 - 📝 coming soon...
