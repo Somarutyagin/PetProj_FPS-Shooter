@@ -4,11 +4,22 @@ Roman</a></h1>
 
 ### Here you can see
 
-- 👾 Scriptable Objects (configs)
+# Patterns
+
 - 🏭 factory
-- 🌱 objectpool
-- 🕔 uniTask
+- ♾️ objectpool
 - 🤖 MVVM
-- ⚡️ uniRX
+- 👁 Observer
+- 🔋 State
+- 1️⃣ Singleton (rarely)
+
+# Technologies
+
+- 👾 Scriptable Objects (configs)
 - 🟢 Zenject
+- 🕔 uniTask
+- ⚡️ uniRX
+- 📎 DoTween
+- 💥 ShaderGraph
+
 - 📝 coming soon...
