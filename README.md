@@ -11,6 +11,7 @@ Roman</a></h1>
 - 🤖 MVVM
 - 👁 Observer
 - 🔋 State
+- 👊 command
 - 1️⃣ Singleton (rarely)
 
 # Technologies
