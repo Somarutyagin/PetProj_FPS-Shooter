@@ -3,10 +3,15 @@ using Zenject;
 
 public class GameInstaller : MonoInstaller
 {
-    //[SerializeField] private GameObject enemyPrefab;
     public override void InstallBindings()
     {
         Container.Bind<WeaponConfigsContainer>().FromScriptableObjectResource("Configs/Weapons/WeaponConfigsContainer").AsSingle();
+        Container.Bind<PlayerStatsConfig>().FromScriptableObjectResource("Configs/Stats/PlayerStatsConfig").AsSingle();
+        Container.Bind<ExperienceConfig>().FromScriptableObjectResource("Configs/Experience/ExperienceConfig").AsSingle();
+        Container.Bind<PlayerConfig>().FromScriptableObjectResource("Configs/Player/PlayerConfig").AsSingle();
+        Container.Bind<EnemyConfig>().FromScriptableObjectResource("Configs/Enemy/EnemyConfig").AsSingle();
+        Container.Bind<EnemySpawnConfig>().FromScriptableObjectResource("Configs/Enemy/EnemySpawnConfig").AsSingle();
+
         Container.Bind<GameObject>().WithId("BulletHole").FromResource("Prefabs/BulletHole").AsCached();
         Container.Bind<GameObject>().WithId("BulletTracer").FromResource("Prefabs/BulletTracer").AsCached();
 
@@ -23,6 +28,15 @@ public class GameInstaller : MonoInstaller
         Container.Bind<IHealthViewModel>().To<HealthViewModel>().AsSingle();
 
         Container.Bind<EnemyHealthFactory>().AsSingle();
-        //Container.BindMemoryPool<HealthView, HealthView.Pool>().WithInitialSize(10).FromComponentInNewPrefab(enemyPrefab).UnderTransformGroup("Enemies");
+
+        Container.Bind<RarityManager>().AsSingle();
+        Container.Bind<StatsManager>().AsSingle();
+        Container.Bind<ExperienceManager>().AsSingle();
+        Container.Bind<UpgradeStatCommand>().AsSingle();
+        Container.Bind<StatsViewModel>().AsSingle();
+        Container.Bind<ExperienceViewModel>().AsSingle();
+
+        Container.Bind<PlayerHealthHandler>().FromComponentInHierarchy().AsSingle();
+        Container.Bind<GameStateManager>().FromComponentInHierarchy().AsSingle();
     }
 }

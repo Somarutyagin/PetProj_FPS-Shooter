@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce0feb72f3383a448babc00b0e8efa0c, type: 3}
+  m_Name: ExperienceConfig
+  m_EditorClassIdentifier: 
+  ExpPerLevel: 144.00002
+  ExpScalerPerLevel: 1.2
+  ExpForEnemy: 17

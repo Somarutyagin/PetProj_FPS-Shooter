@@ -28,4 +28,8 @@ public class PlayerHealthHandler : MonoBehaviour
     {
         ViewModel?.TakeDamageCommand.Execute(damage);
     }
+    public void IncreaseHealth(float value)
+    {
+        ViewModel?.IncreaseHealthCommand.Execute(value);
+    }
 }

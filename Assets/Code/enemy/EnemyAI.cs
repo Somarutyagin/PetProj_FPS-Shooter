@@ -1,57 +1,52 @@
 using System;
 using UnityEngine;
-using Zenject;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(HealthView))]
 public class EnemyAI : MonoBehaviour
 {
-    public IHealthViewModel HealthViewModel { get; set; }
+    private IHealthViewModel _healthViewModel;
 
-    [SerializeField] private Transform player;
+    private Transform _player;
+    private EnemySpawner _spawner;
+    private StatsManager _statsManager;
+    private EnemyConfig _enemyConfig;
 
-    private const float moveSpeed = 1f;
-    private const float detectionRange = 30f;
+    private float attackTimer = 0f;
 
-    private EnemySpawner spawner;
     private Rigidbody rb;
     private bool isDead = false;
     private bool isPooled = false;
 
     public event Action<EnemyAI> OnEnemyDeath;
 
-    private const float attackTime = 0.5f;
-    private float attackTimer = 0f;
-
-    [Obsolete]
-    private void Awake()
+    public void Initialize(EnemySpawner spawner, Transform player, IHealthViewModel healthViewModel, StatsManager statsManager, EnemyConfig config)
     {
-        spawner = FindFirstObjectByType<EnemySpawner>();
-        rb = GetComponent<Rigidbody>();
+        _spawner = spawner;
+        _player = player;
+        _statsManager = statsManager;
+        _healthViewModel = healthViewModel;
+        _enemyConfig = config;
 
-        if (player == null)
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) player = playerObj.transform;
-        }
+        rb = GetComponent<Rigidbody>();
     }
 
     [Obsolete]
     private void OnDestroy()
     {
-        if (spawner != null) OnEnemyDeath -= spawner.OnEnemyKilled;
+        if (_spawner != null) OnEnemyDeath -= _spawner.OnEnemyKilled;
     }
 
     private void FixedUpdate()
     {
-        if (isDead || player == null || !isPooled) return;
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-        if (distanceToPlayer <= detectionRange)
+        if (isDead || _player == null || !isPooled) return;
+        float distanceToPlayer = Vector3.Distance(transform.position, _player.position);
+        if (distanceToPlayer <= _enemyConfig.DetectionRange)
         {
-            Vector3 directionToPlayer = (player.position - transform.position).normalized;
+            Vector3 directionToPlayer = (_player.position - transform.position).normalized;
             directionToPlayer = new Vector3(directionToPlayer.x, 0, directionToPlayer.z);
-            rb.linearVelocity = new Vector3(directionToPlayer.x * moveSpeed, rb.linearVelocity.y, directionToPlayer.z * moveSpeed);
-            transform.LookAt(new Vector3(player.position.x, transform.position.y, player.position.z));
+            rb.linearVelocity = new Vector3(directionToPlayer.x * _enemyConfig.MoveSpeed, rb.linearVelocity.y, directionToPlayer.z * _enemyConfig.MoveSpeed);
+            transform.LookAt(new Vector3(_player.position.x, transform.position.y, _player.position.z));
         }
         else
         {
@@ -64,9 +59,9 @@ public class EnemyAI : MonoBehaviour
     }
     private void OnCollisionStay(Collision collision)
     {
-        if (attackTimer >= attackTime && !isDead && collision.transform.TryGetComponent(out PlayerHealthHandler playerHealth))
+        if (attackTimer >= _enemyConfig.AttackTime && !isDead && collision.transform.TryGetComponent(out PlayerHealthHandler playerHealth))
         {
-            playerHealth.TakeDamage(10f);
+            playerHealth.TakeDamage(_enemyConfig.Damage - (_statsManager.GetStatPrecent(StatType.Armor).Value / 100f) * _enemyConfig.Damage);
 
             attackTimer = 0f;
         }
@@ -84,18 +79,16 @@ public class EnemyAI : MonoBehaviour
     {
         isDead = false;
         isPooled = true;
-        transform.position = Vector3.zero;
         rb.linearVelocity = Vector3.zero;
-        gameObject.SetActive(false);
     }
     private void ReturnToPool()
     {
-        spawner.EnemyPool.Return(this);
+        _spawner.EnemyPool.Return(this);
         gameObject.SetActive(false);
     }
 
     public void TakeDamage(float damage)
     {
-        HealthViewModel?.TakeDamageCommand.Execute(damage);
+        _healthViewModel?.TakeDamageCommand.Execute(damage);
     }
 }

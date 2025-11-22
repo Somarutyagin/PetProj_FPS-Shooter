@@ -120,6 +120,7 @@ GameObject:
   - component: {fileID: 7685434133243758744}
   - component: {fileID: 6637255722706545468}
   - component: {fileID: 1006017185022202356}
+  - component: {fileID: 4295395484522347875}
   m_Layer: 0
   m_Name: Pistol
   m_TagString: Weapon
@@ -267,6 +268,18 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!210 &4295395484522347875
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975658529869540792}
+  m_Enabled: 1
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_SortAtRoot: 0
 --- !u!1 &2951137391644551836
 GameObject:
   m_ObjectHideFlags: 0

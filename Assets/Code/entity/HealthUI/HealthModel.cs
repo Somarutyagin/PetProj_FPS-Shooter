@@ -14,4 +14,8 @@ public class HealthModel : IHealthModel
     {
         CurrentHealth.Value = Mathf.Clamp(health, 0, MaxHealth);
     }
+    public void IncreaseHealth(float health)
+    {
+        CurrentHealth.Value = Mathf.Clamp(CurrentHealth.Value + health, 0, MaxHealth);
+    }
 }

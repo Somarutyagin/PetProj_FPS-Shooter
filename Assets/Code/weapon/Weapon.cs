@@ -20,6 +20,8 @@ public class Weapon : MonoBehaviour
     private float currentSpread = 0f;
     private int shotCounter = 0;
 
+    private PlayerHealthHandler healthHandler;
+    private StatsManager statsManager;
     private Animator anim;
     private AnimationClip reloadClip;
     private GameObject bulletTracerPrefab;
@@ -54,7 +56,7 @@ public class Weapon : MonoBehaviour
     private Vector3 baseCameraEuler;
     private LayerMask enemyLayer;
 
-    public void Initialize(string name, int maxAmmo, float reloadTime, float fireRate, float damage, GameObject _bulletTracerPrefab, GameObject _bulletHolePrefab)
+    public void Initialize(string name, int maxAmmo, float reloadTime, float fireRate, float damage, GameObject _bulletTracerPrefab, GameObject _bulletHolePrefab, PlayerHealthHandler playerHealth, StatsManager stats)
     {
         WeaponName = name;
         MaxAmmo = maxAmmo;
@@ -64,6 +66,8 @@ public class Weapon : MonoBehaviour
         Damage = damage;
         bulletTracerPrefab = _bulletTracerPrefab;
         bulletHolePrefab = _bulletHolePrefab;
+        healthHandler = playerHealth;
+        statsManager = stats;
 
         muzzlePoint = transform.GetChild(transform.childCount - 1);
         gunSound = GetComponent<AudioSource>();
@@ -135,9 +139,28 @@ public class Weapon : MonoBehaviour
         if (playerCam != null && Physics.Raycast(playerCam.transform.position, fireDirection, out RaycastHit hit, 100f, enemyLayer))
         {
             CreateImpactEffect(hit);
-
-            EnemyAI enemyAI = hit.collider.gameObject.GetComponent<EnemyAI>();
-            if (enemyAI != null) enemyAI.TakeDamage(Damage);
+            if (hit.collider.gameObject.TryGetComponent<EnemyAI>(out var enemyAI))
+            {
+                float modifiedDamage = Damage;
+                // Get the collider from the enemy
+                var collider = hit.collider as CapsuleCollider; // Assuming CapsuleCollider; adjust if different
+                if (collider != null)
+                {
+                    // Calculate relative height of hit point on the collider
+                    float colliderBottom = enemyAI.transform.position.y + collider.center.y - collider.height / 2;
+                    float colliderTop = enemyAI.transform.position.y + collider.center.y + collider.height / 2;
+                    float relativeHeight = Mathf.Clamp01((hit.point.y - colliderBottom) / collider.height); // Clamp to 0-1
+                    // Interpolate damage multiplier: 0.5x at bottom (0), 1x at middle (0.5), 2x at top (1)
+                    float multiplier = Mathf.Lerp(0.5f, 2f, relativeHeight);
+                    modifiedDamage *= multiplier;
+                }
+                else
+                {
+                    Debug.LogWarning("Enemy does not have a CapsuleCollider for height calculation.");
+                }
+                enemyAI.TakeDamage(modifiedDamage);
+                healthHandler.IncreaseHealth(modifiedDamage * (statsManager.GetStatPrecent(StatType.Lifesteal).Value / 100f));
+            }
         }
 
         if (muzzleFlash != null)

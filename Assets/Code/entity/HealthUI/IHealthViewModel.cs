@@ -5,6 +5,7 @@ public interface IHealthViewModel
     ReactiveCommand OnDeath { get; }
     ReactiveCommand<float> TakeDamageCommand { get; }
     ReactiveCommand<float> SetHealthCommand { get; }
+    ReactiveCommand<float> IncreaseHealthCommand { get; }
     bool IsDead { get; }
     void Dispose();
 }

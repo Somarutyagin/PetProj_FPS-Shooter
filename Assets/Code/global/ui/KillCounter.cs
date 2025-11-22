@@ -1,12 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 public class KillCounter : MonoBehaviour
 {
+    [Inject] ExperienceConfig experienceConfig { get; set; }
+    [Inject] ExperienceManager experienceManager { get; set; }
     [SerializeField] private Text killCountText;
 
     private int killCount = 0;
-    private EnemyAI[] enemies;
 
     private void Awake()
     {
@@ -14,6 +16,8 @@ public class KillCounter : MonoBehaviour
     }
     public void UpdateKillUI()
     {
+        experienceManager.AddExperience(experienceConfig.ExpForEnemy);
+
         killCount++;
         if (killCountText != null && killCountText.text != $"Kills: {killCount}")
         {

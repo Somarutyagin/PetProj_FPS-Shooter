@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,8 +17,8 @@ public class HealthView : MonoBehaviour
     public IHealthViewModel ViewModel { get; set; }
 
     private const float BodyAnimationDuration = 0.1f;
-    private const int IterationCount = 30;
-    private const float AnimTime = 0.2f;
+
+    private float previousHealth;
 
     private void Start()
     {
@@ -26,7 +27,27 @@ public class HealthView : MonoBehaviour
 
     public void Initialize()
     {
-        ViewModel.Model.CurrentHealth.Subscribe(UpdateHPBar).AddTo(this);
+        ViewModel.Model.CurrentHealth.Subscribe(health =>
+        {
+            float fill = (float)health / ViewModel.Model.MaxHealth;
+
+            if (previousHealth >= health)
+            {
+                hpBar.fillAmount = fill;
+                hpBarDelta.DOFillAmount(fill, 0.2f); // Animate fill amount with DOTween
+            }
+            else
+            {
+                hpBarDelta.fillAmount = fill;
+                hpBar.DOFillAmount(fill, 0.2f); // Animate fill amount with DOTween
+            }
+            previousHealth = health;
+            if (hpBarText != null)
+            {
+                hpBarText.text = $"{(int)health}/{(int)ViewModel.Model.MaxHealth}";
+            }
+        })
+        .AddTo(this);
         ViewModel.OnDeath.Subscribe(_ => Die()).AddTo(this);
         ViewModel.TakeDamageCommand.Subscribe(_ => AnimateBody().Forget()).AddTo(this);
     }
@@ -39,31 +60,6 @@ public class HealthView : MonoBehaviour
     {
         if (hpBar != null) hpBar.fillAmount = 1f;
         if (hpBarDelta != null) hpBarDelta.fillAmount = 1f;
-    }
-
-    private void UpdateHPBar(float currentHealth)
-    {
-        if (hpBar == null || hpBarDelta == null) return;
-
-        if (hpBarText != null)
-        {
-            hpBarText.text = $"{currentHealth:F0}";
-        }
-
-        float fillAmount = currentHealth / ViewModel.Model.MaxHealth;
-        hpBar.fillAmount = fillAmount;
-        AnimateHPBarDelta(fillAmount).Forget();
-    }
-
-    private async UniTask AnimateHPBarDelta(float targetFill)
-    {
-        float startFill = hpBarDelta.fillAmount;
-        float delta = targetFill - startFill;
-        for (int i = 0; i < IterationCount; i++)
-        {
-            await UniTask.Delay((int)(AnimTime / IterationCount * 1000), DelayType.DeltaTime);
-            hpBarDelta.fillAmount += delta / IterationCount;
-        }
     }
 
     private void Die()

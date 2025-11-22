@@ -5,11 +5,15 @@ using Zenject;
 
 public class WeaponController : MonoBehaviour
 {
+    [Inject] private PlayerConfig playerConfig { get; set; }
+    [Inject] private StatsManager statsManager { get; set; }
     [Inject(Id = "BulletTracer")] private GameObject bulletTracerPrefab;
     [Inject(Id = "BulletHole")] private GameObject bulletHolePrefab;
     [Inject] private WeaponConfigsContainer _configsContainer;
     [Inject] private WeaponFactory _weaponFactory;
     [Inject] private AmmoViewModelFactory _viewModelFactory;
+    [Inject] private PlayerHealthHandler _playerHealthHandler;
+    [Inject] private StatsManager _statsManager;
     
     private List<AmmoViewModel> _ammoViewModels = new List<AmmoViewModel>();
     private List<Vector3> _normalWeaponPos = new List<Vector3>();
@@ -21,9 +25,6 @@ public class WeaponController : MonoBehaviour
     private IInputProvider inputProvider;
 
     private Camera playerCamera;
-
-    private const float aimingFov = 40f;
-    private const float normalFov = 60f;
 
     private bool isSwitchingAnim = false;
 
@@ -43,7 +44,7 @@ public class WeaponController : MonoBehaviour
 
         foreach (var config in configs)
         {
-            var weapon = _weaponFactory.Create(config, bulletTracerPrefab, bulletHolePrefab, playerCamera.gameObject.transform);
+            var weapon = _weaponFactory.Create(config, bulletTracerPrefab, bulletHolePrefab, playerCamera.gameObject.transform, _playerHealthHandler, _statsManager);
             _normalWeaponPos.Add(weapon.transform.localPosition);
 
             if (createdCounter == 0)
@@ -122,7 +123,9 @@ public class WeaponController : MonoBehaviour
     {
         bool isAiming = inputProvider.IsADSPressed();
 
-        float targetFOV = isAiming ? aimingFov : normalFov;
+        float targetFOV = isAiming ? playerConfig.AimingFov : playerConfig.NormalFov;
+        targetFOV += targetFOV * statsManager.GetStatPrecent(StatType.Speed).Value / 100f; // Apply speed multiplier
+
         playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFOV, Time.deltaTime * 5f);
 
         Vector3 targetWeaponPos = isAiming ? new Vector3(0, _normalWeaponPos[_activeWeaponIndex].y, _normalWeaponPos[_activeWeaponIndex].z) : _normalWeaponPos[_activeWeaponIndex];
