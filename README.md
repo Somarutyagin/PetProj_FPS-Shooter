@@ -7,19 +7,19 @@ Roman</a></h1>
 # Patterns
 
 - 🏭 factory
-- ♾️ objectpool
+- ♾️ Objectpool
 - 🤖 MVVM
 - 👁 Observer
 - 🔋 State
-- 👊 command
+- 👊 Command
 - 1️⃣ Singleton (rarely)
 
 # Technologies
 
 - 👾 Scriptable Objects (configs)
 - 🟢 Zenject
-- 🕔 uniTask
-- ⚡️ uniRX
+- 🕔 UniTask
+- ⚡️ UniRX
 - 📎 DoTween
 - 💥 ShaderGraph
 
