@@ -6,7 +6,7 @@ Roman</a></h1>
 
 # Patterns
 
-- 🏭 factory
+- 🏭 Factory
 - ♾️ Objectpool
 - 🤖 MVVM
 - 👁 Observer
